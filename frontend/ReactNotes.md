@@ -235,6 +235,9 @@ function Title(){
   }
 ```
 
+When the Context value changes, every component consuming it re-renders. Fast changing data in Context = performance problem.
+For frequent global state updates, reach for Zustand or Redux instead.
+
 ## 17 - Portals
 
 Like contexts but for components
@@ -362,31 +365,50 @@ const[count, dispatch] = useRedcuer(reducer, 0)
 ### b)
 
 ```javascript
-const initialState = {email: '', password: ''}
-const [state, dispatch] = useReducer(reducer, initialState)
+const initialState = {
+  email: '',
+  password: '',
+};
 
 const reducer = (state, action) => {
-  switch(action.type){
+  switch (action.type) {
     case 'SET_EMAIL':
-      return { ...state, email: action.payload}
+      return {
+        ...state,
+        email: action.payload,
+      };
+
     case 'SET_PASS':
-      return { ...state, password: action.payload}
+      return {
+        ...state,
+        password: action.payload,
+      };
+
     default:
-      return state
+      return state;
   }
-}
+};
+
+const [state, dispatch] = useReducer(reducer, initialState);
 
 <form>
   <input
-    type = "email"
-    onChange = {(e) => {
-      dispatch({type: 'Email', payload: e.target.value})
+    type="email"
+    onChange={(e) => {
+      dispatch({
+        type: 'SET_EMAIL',
+        payload: e.target.value,
+      });
     }}
   />
+
   <input
-    type = "password"
+    type="password"
     onChange={(e) => {
-      dispatch({type: 'PASS', paload: e.target.value})
+      dispatch({
+        type: 'SET_PASS',
+        payload: e.target.value,
+      });
     }}
   />
 </form>
@@ -414,3 +436,219 @@ const[state, dispatch] = useReducer(gameReducer, {position:0, score:0})'
   <button onClick={() => dispatch({type:'score', points:10})}> Score </button>
 </>
 ```
+
+## 3 - useEffects
+
+### a) Example 1
+```javascript
+const[count,setCount] = useState(0)
+
+useEffects(() => {
+document.title = "You clicked ${count} times"
+}, [count])
+
+<button onClick={() => setCount(count+1)}>
+  Click me
+</button>
+```
+Two kind of side effects Event-Based, Render-Based
+We shall not use useEffect() in any of them.
+
+a) Event-Base - U can make your code simpler by doing it as EventHandler
+```javascript
+<button onClick = {saveData}>
+  Save
+</button>
+```
+b) Use reactQuery or frameWork tool
+
+### b) Example 2
+Ideal for syncing your React code with browser APIs
+
+```javascript
+const ref useRef(null)
+
+useEffect(() => {
+  if(isPlaying){
+    ref.current.play()
+  } else {
+    ref.current.pause()
+  }
+}, [isPlaying])
+
+<video ref = {ref} src={src} loop playsInline />
+
+```
+
+### c) Example 3
+
+```javascript
+
+import { useEffect, useState } from 'react';
+
+interface DemoProps {}
+
+export default function Demo({}: DemoProps) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    // The code that we want to run
+    console.log('The count is:', count);
+
+    // Optional return function
+    return () => {
+      console.log("I am being cleaned up!");
+    }
+  }, []); // The dependency array
+
+
+
+  return (
+    <div className='tutorial'>
+      <h1>Count: {count}</h1>
+      <button onClick={() => setCount(count - 1)}> Decrement </button>
+      <button onClick={() => setCount(count + 1)}> Increment </button>
+    </div>
+  );
+}
+
+```
+
+## 4 - useMemo
+
+```javascript
+import {useRef} from 'react';
+import {initialItems} from './utils';
+
+interface DemoProps {}
+
+function Demo({}:DemoProps)
+{
+  const[count, setCount] = useState(0);
+  const[items] = useState(initialItems);
+  
+  const selectedItem = useMemo (() => items.find((item) => item.isSelected), [items]);
+
+  return (
+    <div className='tutorial'>
+      <h1> Count {count}</h1>
+      <h1> Selected Item: {selectedItem?.id}</h1>
+      <button onClick={() => setCount(count+1)}> Increment </button>
+    </div>
+  )
+}
+
+export default Demo;
+```
+
+## 5 - callBack
+```javascript
+import { useState } from 'react';
+
+import { shuffle } from '@/utils';
+
+import Search from './Search';
+
+const allUsers = [
+  'john',
+  'alex',
+  'george',
+  'simon',
+  'james',
+];
+
+interface DemoProps {}
+
+export default function Demo({}: DemoProps) {
+  const [users, setUsers] = useState(allUsers);
+
+  const handleSearch = useCallBack((text: string) => {
+    console.log(users[0]);
+    const filteredUsers = allUsers.filter((user) =>
+      user.includes(text),
+    );
+    setUsers(filteredUsers);
+  }, [user]):
+
+  return (
+    <div className='tutorial'>
+      <div className='align-center mb-2 flex'>
+        <button onClick={() => setUsers(shuffle(allUsers))}>
+          Shuffle
+        </button>
+
+        <Search onChange={handleSearch} />
+      </div>
+
+      <ul>
+        {users.map((user) => (
+          <li key={user}>{user}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## 6 - Custom Hooks
+```javascript
+import { useEffect, useState } from 'react';
+
+function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        setError(false);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const data = await response.json();
+
+        setData(data);
+        setLoading(false);
+      } catch (error) {
+        setError(true);
+        setLoading(false);
+      }
+    })();
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+export default function Users() {
+  const { data, loading, error } = useFetch(
+    'https://jsonplaceholder.typicode.com/users'
+  );
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Something went wrong</p>;
+  }
+
+  return (
+    <div>
+      <h1>Users</h1>
+
+      {data?.map((user) => (
+        <p key={user.id}>{user.name}</p>
+      ))}
+    </div>
+  );
+}
+
+```
+
+createBrowserRouter
