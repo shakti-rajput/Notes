@@ -1,55 +1,102 @@
-1 - Components - reusable
+# React Notes
+
+## 1 - Components - reusable
+
 A javascript function not returns markup it return JSX. JSX is also optional
 
-2 - 
-Variable - 
+## 2
+
+### Variable
+
+```javascript
 const planet = 'world'
 <div> Hello {planet} </div>
+```
 
-Dynamic Attributes -
+### Dynamic Attributes
+
+```javascript
 const src = "/react.svg"
 <img src = {src} />
+```
 
-Dynamic Styles -
+### Dynamic Styles
+
+```javascript
 const background = "red"
 <div style ={{background}} /div>
+```
 
-3- JS functions can return only ONE thing
+## 3 - JS functions can return only ONE thing
+
+```javascript
 function App(){
   return (
     <>
       </Header>
       <Main/>
     </>
+```
+
 These empty component are called React Fragments
 
-4- Props
-Sending Value - <Greetings text = {'Yo'}/>
-Using Value - function Greetings(props){
+## 4 - Props
+
+### Sending Value
+
+```jsx
+<Greetings text = {'Yo'}/>
+```
+
+### Using Value
+
+```javascript
+function Greetings(props){
                 return <h1> {props.text}</h1> 
               }
+```
 
-5 - U can pass anything as the props even other components as children props. Great for composition. Great for layout components
+## 5
+
+U can pass anything as the props even other components as children props. Great for composition. Great for layout components
+
+```jsx
 <Parent>
   <Child/>
 </Parent>
+```
 
-6 - < Component key={'1'} />
+## 6
+
+```jsx
+<Component key={'1'} />
 
 { items.map((item,index) => (<div key = {index}> {item} </div>))}
+```
+
 use index if no unique key
 
-7 - Rendering 
-DOM - Document Object Model (looks like tree)
-Virtual DOM
-Rendering Process
-StateChanged?(Update VDOM) -> Diffs (Identify what changed) -> Reconciliation with DOM
+## 7 - Rendering
 
-8 - Event Handling (Handling User Interactions)
+DOM - Document Object Model (looks like tree)
+
+Virtual DOM
+
+Rendering Process
+
+```text
+StateChanged?(Update VDOM) -> Diffs (Identify what changed) -> Reconciliation with DOM
+```
+
+## 8 - Event Handling (Handling User Interactions)
+
+```jsx
 <button onClick = {handleClick} />
 <input OnChange = {handleChange} />
 <form onSubmit = {handleSubmit} />
+```
 
+```javascript
 function RedAlert(){
   const handleClick = () => {
     alert('Alert!!!')
@@ -58,24 +105,33 @@ function RedAlert(){
     <button onClick={handleClick}> Click Me </button>
   )
 }
+```
 
-9 - State as SnapShot
+## 9 - State as SnapShot
+
 We have to use Special functions
+
+```text
 useState()
 useReducer()
+```
 
+```javascript
 function Likes()
 {
   const [likes, setLikes] = useState(0)
-  
+
   const handleClick = () => {
     setClicks(likes+1)
   }
 
   return ( <button onClick={handleClick}> Likes: {likes} </button>)
 }
+```
 
-10 - Controlled Components
+## 10 - Controlled Components
+
+```javascript
 function ControlledInput(){
   const [value, setValue] = useState('')
   return (
@@ -83,69 +139,111 @@ function ControlledInput(){
             onChange={(e) => setValue(e.target.value)} />
   )
 }
+```
 
-11 - 5 Types of Hook
-  1- StateHook  
-    ** useState()
-    useReducer()
-  2- Context Hooks
-    useContext()
-  3- Ref Hooks
-    ** useRef()
-  4- Effects Hooks
-    ** useEffect()
-  5- Performance
-    useMemo()
-    useCallback()
+## 11 - 5 Types of Hook
 
-12- Purity
+1- StateHook  
+   ** useState()
+   useReducer()
+
+2- Context Hooks
+   useContext()
+
+3- Ref Hooks
+   ** useRef()
+
+4- Effects Hooks
+   ** useEffect()
+
+5- Performance
+   useMemo()
+   useCallback()
+
+## 12 - Purity
+
 Same Input should return same Output
+
 Only return JSX, Dont Change stuff that existed before rendering
 
-To prevent changing any variable while rendering we can use Strict Mode 
+To prevent changing any variable while rendering we can use Strict Mode
+
+```jsx
 <StrictMode>
   <App/>
 </StrictMode>
+```
 
-13 - Effects are those where code reaches outside of React apps
+## 13- Effects are those where code reaches outside of React apps
+
 Request side effects made in event Handler
+
+```javascript
 function handleSubmit(e)
 {
   e.preventDefault()
   post('/api/register', {email, password})
 }
+```
 
-14- If u can not run your effects in event handlers then u can run them using useEffect()
+## 14- If u can not run your effects in event handlers then u can run them using useEffect()
+
+```javascript
 useEffects(() => {
   fetchData().then(data => {})
 }, [])
+```
 
-15 - If u want to get out from react and directly work with DOM element. To refrence an actual DOM element use Ref
+## 15 - If u want to get out from react and directly work with DOM element. To refrence an actual DOM element use Ref
+
+```javascript
 const ref = useRef()
 <input ref={ref}/>
 ref.current.focus()
+```
 
-16 - Context
+## 16 - Context
+
 If u want to pass the data through components (Like jump to where the data needs to go through)
 
-a) Create your context ->
-  const AppContext = createContext()
-b) Wrap
-  <AppContext.Provider>
-    <App/>
-  </AppContext.Provider>
-c) Put data on the Provider
-  <AppContext.Provider value = "Hello">
-d) access the data
-  function Title(){
+### a) Create your context ->
+
+```javascript
+const AppContext = createContext
+```
+
+### b) Wrap
+
+```jsx
+<AppContext.Provider>
+  <App/>
+</AppContext.Provider>
+```
+
+### c) Put data on the Provider
+
+```jsx
+<AppContext.Provider value = "Hello">
+```
+
+### d) access the data
+
+```javascript
+function Title(){
     const text = useContext(AppContext)
     return <h1> {text} </h1>
   }
+```
 
-17 - Portals
-  Like contexts but for components
+## 17 - Portals
+
+Like contexts but for components
+
 Portals let u move react components into any HTML component u select.
-Helpful for displaying modal, dropdowns, tooltips(Useful for the components where they can not be displayed properly due to their parents component style) 
+
+Helpful for displaying modal, dropdowns, tooltips(Useful for the components where they can not be displayed properly due to their parents component style)
+
+```jsx
 <div>
   <p> I am in the parent div </p>
   {createPortal(
@@ -153,9 +251,11 @@ Helpful for displaying modal, dropdowns, tooltips(Useful for the components wher
         document.body
   )}
 </div>
+```
 
-18 - Suspense Component to show waiting or lazy loading
+## 18 - Suspense Component to show waiting or lazy loading
 
+```javascript
 const Component = lazy(
   () => import('./Component')
 )
@@ -163,9 +263,11 @@ const Component = lazy(
 <Suspense fallback = {<Loading/>}>
   <Component/>
 </Suspense>
+```
 
-19 - ErrorBoundry
+## 19 - ErrorBoundry
 
+```javascript
 import {ErrorBoundry} from 'react-error-boundry'
 
 function Fallback({erro}){
@@ -180,13 +282,17 @@ function Fallback({erro}){
 <ErorrBoundry FallBackComponent = {FallBack}>
   <App/>
 </ErrorBoundry>
+```
 
-----------------------------------------------------------------------------------
+---
 
-Hooks
+# Hooks
 
-1 - UseState
-a) Manage Form Input
+## 1 - UseState
+
+### a) Manage Form Input
+
+```javascript
 const [value, setValue] = useState("")
 
 const handleChange = (e) => {
@@ -194,8 +300,11 @@ const handleChange = (e) => {
 }
 
 <input type = "text" value ={value} onChange = {handleChange} /> 
+```
 
-b) Show or hide components
+### b) Show or hide components
+
+```javascript
 const[isVisible, setIsVisible] = useState(false)
 
 <button onClick={() => setIsVisible(!isVisible)}>
@@ -205,9 +314,11 @@ const[isVisible, setIsVisible] = useState(false)
 <>
   {isVisible && <div> Content to Show/Hide </div>}
 </>
+```
 
-c) Dynamic Styles
+### c) Dynamic Styles
 
+```javascript
 const[isActive, setIsActive] = useState(false)
 
 <button className = {isActive ? 'active': 'inactive'} 
@@ -215,8 +326,11 @@ const[isActive, setIsActive] = useState(false)
 >
 Click Me
 </button>
+```
 
-d) Counters 
+### d) Counters
+
+```javascript
 const[count, setCount] = useState(0)
 
 const increment = () => setCount(count+1)
@@ -226,10 +340,13 @@ const decrement = () => setCount(count-1)
   <button onClick={decrement}> - </button>
   <button onClick={increment}> + </button>
 </div>
+```
 
+## 2- Reducer
 
-2- Reducer 
-a) 
+### a)
+
+```javascript
 const reducer = (state, action) => {
   switch(action){
     case 'increment':
@@ -240,9 +357,11 @@ const reducer = (state, action) => {
 const[count, dispatch] = useRedcuer(reducer, 0)
 
 <button onClick={ () => dispatch('increment')} > Increment </button>
+```
 
-b)
+### b)
 
+```javascript
 const initialState = {email: '', password: ''}
 const [state, dispatch] = useReducer(reducer, initialState)
 
@@ -271,9 +390,11 @@ const reducer = (state, action) => {
     }}
   />
 </form>
+```
 
-c)
+### c)
 
+```javascript
 const gameReducer = (state, action) => {
   switch (action.type){
     case 'move':
@@ -292,5 +413,4 @@ const[state, dispatch] = useReducer(gameReducer, {position:0, score:0})'
   <button onClick={() => dispatch({type:'move', distance:1})}> Move </button>
   <button onClick={() => dispatch({type:'score', points:10})}> Score </button>
 </>
-
-
+```
