@@ -866,7 +866,19 @@ Return Value Of `printf` And `scanf` is the number of character `printf` is prin
 ## 29. Copy Constructor
 
 ```cpp
-Foo(const Foo &bar)
+class Foo {
+public:
+    int value;
+
+    Foo(int v) {
+        value = v;
+    }
+
+    // Copy constructor
+    Foo(const Foo& other) {
+        value = other.value;
+    }
+};
 ```
 
 it is const because we dont want to modify the value and it is passed by refrence so that it will not go on recursively calling the copy constructor
