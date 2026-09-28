@@ -642,7 +642,44 @@ THREAD SYNCHRONIZATION
 ```
 
 
-## 12. Mutex vs Semaphore
+## 12. Semaphore
+```cpp
+#include <iostream>
+#include <semaphore>
+#include <thread>
+#include <vector>
+#include <chrono>
+
+std::counting_semaphore<3> dbSemaphore(3);
+
+void useDatabase(int id)
+{
+    dbSemaphore.acquire();
+
+    std::cout << "Thread " << id << " using database\n";
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    std::cout << "Thread " << id << " finished\n";
+
+    dbSemaphore.release();
+}
+
+int main()
+{
+    std::vector<std::thread> threads;
+
+    for (int i = 1; i <= 6; i++)
+    {
+        threads.emplace_back(useDatabase, i);
+    }
+
+    for (auto& t : threads)
+    {
+        t.join();
+    }
+}
+```
 
 ## 13. `transform`
 
@@ -676,6 +713,14 @@ cout << v[0];  // ✅
 - Mutex
 - Condition variable
 - Shutdown mechanism
+// C++
+boost::asio::thread_pool pool(3);
+
+boost::asio::post(pool, [] { doWork(1); });
+boost::asio::post(pool, [] { doWork(2); });
+boost::asio::post(pool, [] { doWork(3); });
+
+pool.join();
 
 ## 16. Lvalues / Rvalues
 
