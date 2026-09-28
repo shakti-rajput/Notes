@@ -713,6 +713,8 @@ cout << v[0];  // ✅
 - Mutex
 - Condition variable
 - Shutdown mechanism
+
+```cpp
 // C++
 boost::asio::thread_pool pool(3);
 
@@ -721,6 +723,7 @@ boost::asio::post(pool, [] { doWork(2); });
 boost::asio::post(pool, [] { doWork(3); });
 
 pool.join();
+```
 
 ## 16. Lvalues / Rvalues
 
