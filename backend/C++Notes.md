@@ -87,11 +87,560 @@ weak_ptr<int> weak = shared;
 atomic<int> counter;
 ```
 
-## 11. Mutex
+## 11. Mutex and Thread Synchronization
 
-```cpp
-lock_guard<mutex> lock(m);
+### `std::mutex`
+
+``` cpp
+#include <mutex>
+
+std::mutex m;
+int counter = 0;
+
+void increment()
+{
+    m.lock();
+
+    counter++;
+
+    m.unlock();
+}
 ```
+
+### Using `std::lock_guard`
+
+``` cpp
+void increment()
+{
+    std::lock_guard<std::mutex> lock(m);
+
+    counter++;
+}
+```
+
+### Using `std::unique_lock`
+
+``` cpp
+void increment()
+{
+    std::unique_lock<std::mutex> lock(m);
+
+    counter++;
+}
+```
+
+------------------------------------------------------------------------
+
+### `std::recursive_mutex`
+
+A `recursive_mutex` allows the same thread to lock the same mutex
+multiple times.
+
+#### Manual `lock()` / `unlock()`
+
+``` cpp
+std::recursive_mutex m;
+
+void foo()
+{
+    m.lock();
+
+    bar();
+
+    m.unlock();
+}
+
+void bar()
+{
+    m.lock();
+
+    // same thread locks m again
+
+    m.unlock();
+}
+```
+
+#### Using `std::lock_guard`
+
+``` cpp
+std::recursive_mutex m;
+
+void foo()
+{
+    std::lock_guard<std::recursive_mutex> lock(m);
+
+    bar();
+}
+
+void bar()
+{
+    std::lock_guard<std::recursive_mutex> lock(m);
+
+    // same thread can lock it again
+}
+```
+
+The first `lock_guard` locks it once.
+
+The second `lock_guard` locks it a second time.
+
+The recursive mutex keeps track of this.
+
+#### Using `std::unique_lock`
+
+``` cpp
+void foo()
+{
+    std::unique_lock<std::recursive_mutex> lock(m);
+
+    bar();
+}
+
+void bar()
+{
+    std::unique_lock<std::recursive_mutex> lock(m);
+
+    // allowed
+}
+```
+
+------------------------------------------------------------------------
+
+### `std::timed_mutex`
+
+A `timed_mutex` allows you to try to acquire the mutex for a limited
+amount of time.
+
+#### Manual-style locking
+
+``` cpp
+std::timed_mutex m;
+
+if (m.try_lock_for(std::chrono::seconds(1))) {
+
+    // got the lock
+
+    m.unlock();
+
+} else {
+
+    // couldn't get lock within 1 second
+}
+```
+
+#### Using `std::unique_lock`
+
+``` cpp
+std::timed_mutex m;
+
+void foo()
+{
+    std::unique_lock<std::timed_mutex> lock(
+        m,
+        std::defer_lock
+    );
+
+    if (lock.try_lock_for(std::chrono::seconds(1))) {
+
+        // got the lock
+
+    } else {
+
+        // timeout
+    }
+}
+```
+
+------------------------------------------------------------------------
+
+### `std::recursive_timed_mutex`
+
+This combines:
+
+-   Recursive locking
+-   Timed locking
+
+#### Manual locking
+
+``` cpp
+std::recursive_timed_mutex m;
+
+if (m.try_lock_for(std::chrono::seconds(1))) {
+
+    // got lock
+
+    m.unlock();
+}
+```
+
+#### Because it is recursive
+
+``` cpp
+void foo()
+{
+    m.lock();
+
+    bar();
+
+    m.unlock();
+}
+
+void bar()
+{
+    m.lock();
+
+    // same thread can lock again
+
+    m.unlock();
+}
+```
+
+#### Using `std::unique_lock`
+
+``` cpp
+std::recursive_timed_mutex m;
+
+void foo()
+{
+    std::unique_lock<std::recursive_timed_mutex> lock(
+        m,
+        std::defer_lock
+    );
+
+    if (lock.try_lock_for(std::chrono::seconds(1))) {
+
+        bar();
+
+    } else {
+
+        // couldn't get lock
+    }
+}
+```
+
+------------------------------------------------------------------------
+
+### `std::shared_mutex`
+
+A `shared_mutex` supports multiple readers but only one writer at a
+time.
+
+``` text
+             shared_mutex
+                 │
+        ┌────────┴────────┐
+        │                 │
+     READERS            WRITER
+        │                 │
+   multiple allowed    one allowed
+```
+
+#### Manual exclusive lock
+
+For writing:
+
+``` cpp
+std::shared_mutex m;
+int value = 0;
+
+void write()
+{
+    m.lock();
+
+    value++;
+
+    m.unlock();
+}
+```
+
+Only one writer can enter.
+
+#### Using `std::unique_lock`
+
+``` cpp
+void write()
+{
+    std::unique_lock<std::shared_mutex> lock(m);
+
+    value++;
+}
+```
+
+#### Manual shared locking
+
+For reading, we don't want to block other readers.
+
+``` cpp
+std::shared_mutex m;
+
+void read()
+{
+    m.lock_shared();
+
+    std::cout << value;
+
+    m.unlock_shared();
+}
+```
+
+Multiple threads can do this simultaneously.
+
+``` text
+Reader 1 ──┐
+Reader 2 ──┼── READ ──> allowed
+Reader 3 ──┘
+```
+
+#### Using `std::shared_lock`
+
+Much cleaner:
+
+``` cpp
+void read()
+{
+    std::shared_lock<std::shared_mutex> lock(m);
+
+    std::cout << value;
+}
+```
+
+
+## Lock Management
+
+### `std::lock_guard`
+
+``` cpp
+std::lock_guard<std::mutex> lock(m);
+```
+It automatically unlocks the mutex when it goes out of scope.
+
+------------------------------------------------------------------------
+
+### `std::unique_lock`
+
+``` cpp
+std::unique_lock<std::mutex> lock(m);
+```
+
+``` cpp
+std::unique_lock<std::mutex> lock(m);
+
+lock.unlock();
+
+// do something without the mutex
+
+lock.lock();
+
+// protected again
+```
+
+------------------------------------------------------------------------
+
+### `std::shared_lock`
+
+Used for read locking with `std::shared_mutex`.
+
+``` cpp
+std::shared_lock<std::shared_mutex> lock(m);
+```
+
+Multiple threads can hold shared locks simultaneously.
+
+------------------------------------------------------------------------
+
+## Why Use Lock Management?
+
+A mutex provides the actual synchronization. Lock-management classes
+make locking safer and easier.
+
+The mutex is automatically unlocked when `lock` goes out of scope.
+
+This is RAII:
+
+``` text
+constructor → lock mutex
+destructor  → unlock mutex
+```
+
+This also protects against early returns and exceptions.
+
+### Example of the problem with manual locking
+
+``` cpp
+void increment()
+{
+    m.lock();
+
+    counter++;
+
+    if (counter == 1)
+        return;       // forgot m.unlock()
+
+    m.unlock();
+}
+```
+
+The mutex can remain locked.
+
+With `lock_guard`:
+
+``` cpp
+void increment()
+{
+    std::lock_guard<std::mutex> lock(m);
+
+    counter++;
+
+    if (counter == 1)
+        return;
+}
+```
+
+The mutex is automatically unlocked when `lock` is destroyed.
+
+------------------------------------------------------------------------
+
+## `std::condition_variable`
+
+A `condition_variable` allows a thread to sleep until a condition may
+have become true.
+
+Example:
+
+``` cpp
+std::mutex m;
+std::condition_variable cv;
+std::queue<int> queue;
+```
+
+Consumer:
+
+``` cpp
+void consumer()
+{
+    while (true)
+    {
+        std::unique_lock<std::mutex> lock(m);
+
+        cv.wait(lock, [] {
+            return !queue.empty();
+        });
+
+        int item = queue.front();
+        queue.pop();
+
+        lock.unlock();
+
+        consumeItem(item);
+    }
+}
+```
+
+Producer:
+
+``` cpp
+void producer()
+{
+    while (true)
+    {
+        int item = produceItem();
+
+        {
+            std::lock_guard<std::mutex> lock(m);
+            queue.push(item);
+        }
+
+        cv.notify_one();
+    }
+}
+```
+
+The wait condition here is:
+
+``` cpp
+!queue.empty()
+```
+
+Meaning:
+
+> "Continue only when the queue is not empty."
+
+### Multiple wait conditions
+
+You can have multiple conditions:
+
+``` cpp
+cv.wait(lock, [] {
+    return !queue.empty() || shutdown;
+});
+```
+------------------------------------------------------------------------
+
+## `std::atomic`
+
+`std::atomic` is not a mutex.
+
+It is used when simple shared state can be manipulated atomically.
+
+``` cpp
+#include <atomic>
+
+std::atomic<int> counter{0};
+
+void increment()
+{
+    counter++;
+}
+```
+
+For a simple counter, a mutex may not be necessary.
+
+------------------------------------------------------------------------
+
+# Complete Thread Synchronization Picture
+
+``` text
+THREAD SYNCHRONIZATION
+│
+├── MUTEX
+│   │
+│   ├── std::mutex
+│   │      │
+│   │      ├── m.lock()
+│   │      │   ...
+│   │      │   m.unlock()
+│   │      │
+│   │      ├── lock_guard
+│   │      └── unique_lock
+│   │
+│   ├── recursive_mutex
+│   │      │
+│   │      ├── m.lock()
+│   │      ├── lock_guard
+│   │      └── unique_lock
+│   │
+│   ├── timed_mutex
+│   │      │
+│   │      ├── m.try_lock_for()
+│   │      └── unique_lock
+│   │
+│   ├── recursive_timed_mutex
+│   │      │
+│   │      └── unique_lock
+│   │
+│   └── shared_mutex
+│          │
+│          ├── WRITE
+│          │    └── unique_lock
+│          │
+│          └── READ
+│               └── shared_lock
+│
+├── ATOMIC
+│
+└── CONDITION_VARIABLE
+```
+
 
 ## 12. Mutex vs Semaphore
 
