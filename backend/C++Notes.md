@@ -735,13 +735,50 @@ pool.join();
 
 - Naive double-checked locking is unsafe → proper memory ordering/publication isn't guaranteed.
 
-Use `call_once` or:
+Use `call_once`
+```cpp
+#include <mutex>
+
+class Singleton
+{
+private:
+    static Singleton* instance;
+    static std::once_flag flag;
+
+public:
+    static Singleton& getInstance()
+    {
+        std::call_once(flag, [] {
+            instance = new Singleton();
+        });
+
+        return *instance;
+    }
+};
+
+Singleton* Singleton::instance = nullptr;
+std::once_flag Singleton::flag;
+```
+
+or:
+
 
 ```cpp
-static Singleton& getInstance() {
-    static Singleton instance;
-    return instance;
-}
+class Singleton
+{
+public:
+    static Singleton& getInstance()
+    {
+        static Singleton instance;
+        return instance;
+    }
+
+private:
+    Singleton() {}
+};
+
+Singleton& s1 = Singleton::getInstance();
+Singleton& s2 = Singleton::getInstance();
 ```
 
 ## 18. Name Mangling
