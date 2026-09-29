@@ -1,3 +1,4 @@
+```vue
 UserCard.vue — Child
 
 :"Vue, evaluate what is inside the quotes as JavaScript instead of treating it as a plain string."
@@ -179,3 +180,4 @@ g)
   </div>
 </template>
 
+```
