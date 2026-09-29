@@ -31,6 +31,7 @@ I took a little bit time off to visit my parents did arrangements for marrige tr
 
 11. Tell me about a difficult situation/conflict you faced at work.
     a) to consume the payload we can write our own custom class by understanding what response they are sending. Or we have can use the jar of other team to unload the response. So I was new to the company I was not aware of this situation.
+    
     b) We have to give the demo to the client but on the demo day our code was not working even though we did everything what we could to avoid that situation we tested our code. Later on when we started debugging the issue we found out that it was thee problem of 4G and 5G problem.
 
 
