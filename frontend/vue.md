@@ -24,7 +24,7 @@ a)
 
 App.vue - Parent
 
-<script lang="ts">
+<script setup lang="ts">
   import UserCard from './components/UserCard.vue'
 </script>
 
@@ -39,7 +39,7 @@ Child:
 <details>
   <summary>Solution - UserCard.vue (Updated Child)</summary>
   <script setup lang="ts">
-    const props = withDefaults(defineProps<{name:string, age:number, isOnline:boolean}>())
+    const props = defineProps<{name:string, age:number, isOnline:boolean}>()
     const emit = defineEmits<{(e:'toggle-status'):void}>()
   </script>
 
@@ -78,7 +78,7 @@ Parent:
 c)
 <details>
   <summary> </summary>
-  <script>
+  <script setup lang="ts">
     import {ref, computed} from 'vue'
     import UserCard from './UserCard.vue'
 
@@ -94,7 +94,7 @@ c)
   
   <template>
     <p>{{statusLabel}}</p>
-    <UserCard :name="name" :age'="27" :isOnline="isOnline" @toggle-status="handleToggle"/>
+    <UserCard :name="name" :age="27" :isOnline="isOnline" @toggle-status="handleToggle"/>
   </template>
 </details>
 
@@ -135,8 +135,8 @@ e)
   <summary>
     
   </summary>
-  <script>
-    
+  <script setup lang="ts">
+    const fruits = ['Apple', 'Banana', 'Mango']
   </script>
   <template>
     <ul>
@@ -150,6 +150,12 @@ f)
   <summary>
     
   </summary>
+  <script setup lang="ts">
+    import { ref } from 'vue'
+    
+    const isLoggedIn = ref(true)
+    const isLoading = ref(false)
+  </script>
   <template>
     <p v-if="isLoggedIn">Welcome back!</p>
     <p v-show="isLoading">Loading...</p>
