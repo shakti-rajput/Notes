@@ -2,6 +2,7 @@
 UserCard.vue — Child
 
 :"Vue, evaluate what is inside the quotes as JavaScript instead of treating it as a plain string."
+setup - Vue automatically makes the variables/functions available to the template.
 
 a)
 <script setup lang="ts">
