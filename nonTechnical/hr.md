@@ -1,26 +1,43 @@
 
 # Top 10 HR Questions
 
-1. Tell me about yourself.
+1. Tell me about yourself just an overview not in detail.
+   Just tell the what tech stack u used in each company.
 
-2. Walk me through your resume.
+2. What are you looking up for in the next role.
 
-3. Why are you looking for a new job?
+First, real ownership of systems.
+As, I'm looking for an environment where I can continue growing as a software engineer, especially around system design, distributed systems, and building reliable, scalable backend services.
 
-4. Why do you want to join our company?
+Second, a strong engineering team to grow with
+As, I value a collaborative team where engineers take ownership, communicate openly, and have the opportunity to contribute to technical decisions.
 
-5. Why are you interested in this role?
+On the backend side, I want to also go deeper into distributed systems.
+On the deployment side, I want to strengthen my platform and infrastructure skills.
 
-6. What are your strengths?
 
-7. What is your weakness?
 
-8. Tell me about a difficult situation/conflict you faced at work.
+5. Why do you want to join our company?
+   You have to show interest that the company has its legacy and tell about the business and how it interest u to join that business. and interest in joining business can be like I have similar background of financial background (if the company is financial one) or techstack is similar that aligns and maybe ownership is what u are looking forward.
+   Can also contain points if mentioned in JD that I am looking for ownership and we have a techstack similarity.
 
-9. Tell me about a mistake or failure and what you learned from it.
+7. Why are you interested in this role?
+   Can also contain points if mentioned in JD that I am looking for ownership and we have a techstack similarity.
 
-10. What are your salary expectations?
+8. What I have been doing after May?
+My contract was for two years as it was a startup they got funding for two years from fraunhofer after it they have to let me go as they were strugling to find the investors.
+I took a little bit time off to visit my parents did arrangements for marrige traveled few places and now I am looking out for job.
 
+
+11. Tell me about a difficult situation/conflict you faced at work.
+    a) to consume the payload we can write our own custom class by understanding what response they are sending. Or we have can use the jar of other team to unload the response. So I was new to the company I was not aware of this situation.
+    b) We have to give the demo to the client but on the demo day our code was not working even though we did everything what we could to avoid that situation we tested our code. but we have to 
+
+
+13. Tell me about a mistake or failure and what you learned from it.
+
+14. What are your salary expectations?
+    
 # HR Interview – Other most Important Questions
 
 ## About Yourself
