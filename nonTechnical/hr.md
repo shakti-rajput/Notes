@@ -182,10 +182,13 @@
 4. **Client demo + 4G/5G** — problem solving under pressure
 5. **Junior developer + testing** — teamwork
 
+8. What one change you want to look up more in this current company that it should not be there.
+9. Where do u see yourself in next few years?
+10. What matters to you in your next job?
+11. How do you handle pressure?
+12. What would you do if you realized a deadline could not be met?
 
-
-
-10. What are your salary expectations?
+13. What are your salary expectations?
     
 # HR Interview – Other most Important Questions
 
