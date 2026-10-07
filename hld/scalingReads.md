@@ -1,43 +1,87 @@
-1 - Optimize within your database
-  a) Indexing
-  b) Hardware Upgrades
-  c) Denormalizing Strategies
-2 - Scale your database  Horizontally
-  a) Read Replicas (Single Leader)
-  b) Database Sharding
-3 - Add External Caching Layer
-  a)  Application-Level Caching
-    i) Time-based expiration
-    ii) Write-through Invalidation
-    iii) Write behind invalidation
-    iv) Tagged invalidation
-    v) Versioned Keys
-  b) CDN and Edge Caching
+# Scaling Reads
 
-"What happens when your queries start taking longer as your dataset grows?"
-Just add indexes on columns you query frequently.
-if (data skew)
-  addCache()
-else:
-  addReplicas()
+## Strategy Overview
 
-"How do you handle millions of concurrent reads for the same cached data?"(HOT KEY)
-The first solution is request coalescing - basically combining multiple requests for the same key into a single request.
+1. **Optimize within your database**
+   - Indexing
+   - Hardware upgrades
+   - Denormalization strategies
+2. **Scale your database horizontally**
+   - Read replicas (single leader)
+   - Database sharding
+3. **Add an external caching layer**
+   - Application-level caching
+     - Time-based expiration (TTL)
+     - Write-through invalidation
+     - Write-behind invalidation
+     - Tagged invalidation
+     - Versioned keys
+   - CDN and edge caching
 
-When coalescing isn't enough for extreme loads, you need to distribute the load itself.
-Cache key fanout spreads a single hot key across multiple cache entries. Instead of storing the celebrity's post under one key, you store identical copies under ten different keys.
-The trade-off with fanout is memory usage and cache consistency. 
+---
 
-"What happens when multiple requests try to rebuild an expired cache entry simultaneously?"
-It's like a DDOS attack(cache stampede)
-One approach uses distributed locks to serialize rebuilds. Only the first request to notice the missing cache entry gets to rebuild it, while everyone else waits for that rebuild to complete.
-If the rebuild fails or takes too long, thousands of requests timeout waiting. You need complex timeout handling and fallback logic, making this approach fragile under load.
+## Common Deep-Dive Questions
 
-A smarter approach uses probabilistic early refresh 
+### 1. What happens when your queries start taking longer as your dataset grows?
 
-"How do you handle cache invalidation when data updates need to be immediately visible?"
-A common naive approach is delete the cache entry after a write.
-A better approach for entity-level data is cache versioning.
-U update the entry in db update its version in the db and update the cache version in db that for that field new version is the updated value.
-So next request comes checks the updated which version is the updated value finds like v43 then find out the value from the cache is missing so go to the db to fetch and update the value of feild 
+Start by adding indexes on the columns you query frequently.
 
+If indexing is not enough, the next step depends on the access pattern:
+
+```
+if (data skew):      # a small set of keys gets most of the traffic
+    addCache()
+else:                # traffic is spread evenly across the data
+    addReplicas()
+```
+
+### 2. How do you handle millions of concurrent reads for the same cached data? (Hot key)
+
+**Request coalescing**
+
+Combine multiple in-flight requests for the same key into a single request. Only one request hits the backend; the rest wait and share its result.
+
+**Cache key fanout**
+
+When coalescing is not enough for extreme load, distribute the load itself. Spread a single hot key across multiple cache entries: instead of storing the celebrity's post under one key, store identical copies under ten different keys (e.g. `post:123:0` to `post:123:9`) and have each reader pick one at random.
+
+Trade-offs:
+- Higher memory usage
+- Harder cache consistency (every copy must be updated or invalidated)
+
+### 3. What happens when multiple requests try to rebuild an expired cache entry simultaneously? (Cache stampede)
+
+When a popular entry expires, every request misses at once and hits the database together. The effect is similar to a DDoS attack on your own database.
+
+**Distributed locks**
+
+Serialize the rebuild. Only the first request that notices the missing entry rebuilds it; everyone else waits for that rebuild to complete.
+
+Downsides:
+- If the rebuild fails or is slow, thousands of requests time out while waiting
+- Needs complex timeout handling and fallback logic
+- Fragile under load
+
+**Probabilistic early refresh (smarter approach)**
+
+Refresh the entry *before* it expires. Each request has a small chance of triggering a rebuild, and that chance grows as the entry gets closer to expiry. One request refreshes the entry in the background while the others keep getting the still-valid cached value, so there is never a moment where everyone misses together.
+
+### 4. How do you handle cache invalidation when data updates need to be immediately visible?
+
+**Naive approach: delete after write**
+
+Delete the cache entry after writing to the database. Simple, but prone to race conditions (a concurrent reader can repopulate the cache with stale data) and to failed deletes.
+
+**Better approach for entity-level data: cache versioning**
+
+Write path:
+1. Update the entry in the database
+2. Increment its version number in the database
+3. Update the version pointer for that entity (e.g. `user:123:version = 43`)
+
+Read path:
+1. Look up the current version for the entity (finds `v43`)
+2. Read the cache using the versioned key (e.g. `user:123:v43`)
+3. On a miss, fetch from the database and populate the cache under that versioned key
+
+Old versions are never read again and simply expire via TTL, so there is no need to delete them explicitly and no window where stale data is served.
