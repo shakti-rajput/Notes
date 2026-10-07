@@ -3,7 +3,7 @@
 ## Strategy Overview
 
 1. **Optimize within your database**
-   - Indexing
+   - Indexing, Queries themselves(N+1) problem
    - Hardware upgrades
    - Denormalization strategies
 2. **Scale your database horizontally**
