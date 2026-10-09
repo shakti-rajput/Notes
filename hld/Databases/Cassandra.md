@@ -17,11 +17,6 @@
 - Once a memtable fills up, it is flushed to an SSTable in one sequential pass.
 - Compaction merges SSTables.
 
-### SSTable facts
-
-- An SSTable is immutable.
-- It is sorted by partition key (token), which is what makes it fast to find a key inside an SSTable.
-- Finding the right SSTable when reading is the bloom filter's job.
 
 ## Read
 
@@ -41,3 +36,10 @@
 | `Index.db` | For each partition key, its byte position in `Data.db` |
 | `Summary.db` | A sample of the index (for example every 128th key), kept in memory |
 | `Filter.db` | The bloom filter, kept in memory |
+
+
+### SSTable facts
+
+- An SSTable is immutable.
+- It is sorted by partition key (token), which is what makes it fast to find a key inside an SSTable.
+- Finding the right SSTable when reading is the bloom filter's job.
