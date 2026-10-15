@@ -1,4 +1,3 @@
-
 # Real-time Updates (Revision Notes)
 
 Real-time updates are two separate problems:
@@ -43,9 +42,48 @@ Common combo: SSE for receiving updates, plain HTTP POST for sending.
 | **Consistent hashing** | Each user is always assigned to one server (via ZooKeeper/etcd); the sender hashes the user ID to find it | Each connection holds heavy state, e.g. an open Google Doc |
 | **Pub/Sub** | Endpoint servers subscribe to topics (Kafka/Redis); updates are published to the topic | Default choice; many clients, little state per connection |
 
+**Pull:** polling hits the database directly, so the read load grows with users. 1 million users polling every 10 seconds = 100k reads per second.
+
+**Push:** when an update happens, the service that handled it saves it to the DB and then forwards it to the server holding the recipient's connection. To find that server it uses the hash ring (from ZooKeeper) with consistent hashing, or the broker with Pub/Sub.
+
+### Push flow: who does what
+
+The DB never pushes anything itself. The service that writes the update (or a CDC worker reading the DB's change log) triggers the push.
+
+**Consistent hashing:** the update goes to one specific server.
+```
+Update Service → write to DB
+               → hash(recipientId) on the ring → Server 2
+Server 2       → look up recipientId → its open connection → push
+```
+
+**Pub/Sub:** the update goes to the broker, which routes it.
+```
+Update Service → write to DB
+               → publish to topic "user:C"
+Broker         → deliver to endpoint servers subscribed to "user:C"
+Endpoint       → look up the connection for that topic → push
+```
+
+- **Google Docs twist:** hash by document ID, so all editors of one doc share a server and broadcast locally.
+- **Gotcha:** "write to DB, then push" is two steps. A crash in between loses the push. Fix with the outbox pattern or CDC, plus clients fetching missed messages on reconnect.
+
+### Scaling notes
 - **Simple modulo hashing:** changing the number of servers moves almost every user. **Consistent hashing** moves only the users on the affected part of the ring.
 - **Scaling with consistent hashing:** record old and new assignments, move clients gradually, send messages to both servers until the move is done.
 - **Pub/Sub downsides:** the broker is a bottleneck and single point of failure (scale with Redis Cluster), and it doesn't know when clients disconnect.
+
+---
+
+## Common Interview Scenarios
+
+| Scenario | Approach |
+|---|---|
+| **Chat apps** | WebSockets for two-way messages, Pub/Sub to route them to the right server. Also think about message ordering, typing indicators and online status. |
+| **Live comments** | Hierarchical aggregation and batching to avoid overload. |
+| **Collaborative editing** | WebSockets for low-latency changes; operational transforms (OT) or CRDTs to resolve conflicts. |
+| **Live dashboards** | SSE for one-way server-to-dashboard updates; choose a sensible aggregation interval. |
+| **Games** | WebRTC for low-latency peer-to-peer, WebSockets for server coordination. |
 
 ---
 
