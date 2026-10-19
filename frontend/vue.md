@@ -1,10 +1,11 @@
-```vue
+
 UserCard.vue — Child
 
 :"Vue, evaluate what is inside the quotes as JavaScript instead of treating it as a plain string."
 setup - Vue automatically makes the variables/functions available to the template.
 
 a)
+```vue
 <script setup lang="ts">
   // defineProps<{
   //   name:string
@@ -31,11 +32,12 @@ App.vue - Parent
 <template>
   <UserCard name="Shakti" :age="30" :isOnline="true"/>
 </template>
-
+```
 
 b)
 
 Child:
+```vue
 <details>
   <summary>Solution - UserCard.vue (Updated Child)</summary>
   <script setup lang="ts">
@@ -51,9 +53,10 @@ Child:
     </div>
   </template>
 </details>
-
+```
 
 Parent:
+```vue
 <details>
   <summary>Parent.vue(updated)</summary>
 
@@ -73,9 +76,10 @@ Parent:
   </template>
   
 </details>
-
+```
 
 c)
+```vue
 <details>
   <summary> </summary>
   <script setup lang="ts">
@@ -98,10 +102,10 @@ c)
   </template>
 </details>
 
-
+```
 
 d)
-
+```vue
 <details>
   <summary>
     
@@ -128,9 +132,10 @@ d)
     </div>
   </template>
 </details>
-
+```
 
 e)
+```vue
 <details>
   <summary>
     
@@ -144,8 +149,9 @@ e)
     </ul>
   </template>
 </details>
-
+```
 f)
+```vue
 <details>
   <summary>
     
@@ -161,8 +167,9 @@ f)
     <p v-show="isLoading">Loading...</p>
   </template>
 </details>
-
+```
 g)
+```vue
 <script setup lang="ts">
   import {ref} from 'vue'
 
