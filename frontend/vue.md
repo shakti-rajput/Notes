@@ -140,7 +140,7 @@ e)
   </script>
   <template>
     <ul>
-      <li v-for="fruit in fruits" :key="fruit">{{fruit}}</li>
+      <li v-for="(fruit, index) in fruits" :key="index">{{fruit}}</li>
     </ul>
   </template>
 </details>
