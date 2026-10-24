@@ -957,3 +957,21 @@ Plain enum can be interpreted as index 0 to the first value while class enum u h
 1. Keep your constructor and assignment operator as private in your class.
 2. Inherit dummy class with private copy constructor and assignment operator.
 3. `= delete` to your constructor and assignment constructor.
+
+
+Declaration	Can change *p (the value)?	Can reassign p (the address)?
+int* p	yes	yes
+const int* p	no	yes
+int* const p	yes	no
+const int* const p	no	no
+
+
+
+4. Pointer vs reference
+Feature	Pointer	Reference
+Example	int* p = &x;	int& r = x;
+Represents	Memory address	Alias for a variable
+Access value	*p	r
+Can be null?	Yes, nullptr	Should refer to a valid object
+Can point/refer to another variable later?	Yes, reassign the pointer	No, it remains an alias for its original variable
+Can modify the original?	Yes, through *p	Yes, through r
