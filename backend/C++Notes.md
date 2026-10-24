@@ -952,26 +952,31 @@ when first `seta(5)` was called we didnt return the actual object we return the 
 
 Plain enum can be interpreted as index 0 to the first value while class enum u have to explicitly pass the value
 
+
 ## 40. Stop Someone From Copying Your Objects
 
-1. Keep your constructor and assignment operator as private in your class.
-2. Inherit dummy class with private copy constructor and assignment operator.
-3. `= delete` to your constructor and assignment constructor.
+There are three common ways to prevent objects from being copied:
 
+1. **Make the copy constructor and copy-assignment operator private.**
+2. **Inherit from a dummy class** whose copy constructor and copy-assignment operator are private.
+3. **Use `= delete`** to disable the copy constructor and copy-assignment operator.
 
-Declaration	Can change *p (the value)?	Can reassign p (the address)?
-int* p	yes	yes
-const int* p	no	yes
-int* const p	yes	no
-const int* const p	no	no
+### Pointer `const`-Correctness
 
+| Declaration | Can change `*p` (the value)? | Can reassign `p` (the address)? |
+|---|---|---|
+| `int* p` | Yes | Yes |
+| `const int* p` | No | Yes |
+| `int* const p` | Yes | No |
+| `const int* const p` | No | No |
 
+### Pointer vs. Reference
 
-4. Pointer vs reference
-Feature	Pointer	Reference
-Example	int* p = &x;	int& r = x;
-Represents	Memory address	Alias for a variable
-Access value	*p	r
-Can be null?	Yes, nullptr	Should refer to a valid object
-Can point/refer to another variable later?	Yes, reassign the pointer	No, it remains an alias for its original variable
-Can modify the original?	Yes, through *p	Yes, through r
+| Feature | Pointer | Reference |
+|---|---|---|
+| Example | `int* p = &x;` | `int& r = x;` |
+| Represents | Memory address | Alias for a variable |
+| Access value | `*p` | `r` |
+| Can be null? | Yes, `nullptr` | Must refer to a valid object |
+| Can refer to another variable later? | Yes, by reassigning the pointer | No, the reference remains bound to its original object |
+| Can modify the original? | Yes, through `*p`, if permitted | Yes, through `r`, if permitted |
